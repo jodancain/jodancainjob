@@ -1,0 +1,21 @@
+{
+  // example_config.jsonc
+  // A sample scenario:
+  // 1) Open example.com
+  // 2) Click the "More information" link
+  // 3) Take a full-page screenshot
+
+  "start_url": "https://www.example.com/",
+  "profile": "./pw_profile",          // persistent profile dir (cookies/localStorage)
+  "headless": false,                  // show the browser window
+  "browser": "chromium",              // chromium | firefox | webkit
+  "default_timeout": 15000,           // ms
+  "step_default_retries": 2,
+
+  "steps": [
+    { "action": "wait", "selector": "text=More information" },
+    { "action": "click", "selector": "text=More information" },
+    { "action": "screenshot", "path": "after_click.png", "full_page": true },
+    { "action": "sleep", "seconds": 2 }
+  ]
+}
