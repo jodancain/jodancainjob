@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, ContextManager, List, Literal, Mapping, Optional, Sequence
+from typing import Any, Callable, ContextManager, List, Literal, Optional, Sequence
 from urllib.parse import urljoin
 
 try:  # pragma: no cover - import guard executed once
@@ -20,15 +20,6 @@ BrowserActionName = Literal[
 ]
 
 
-SUPPORTED_ACTIONS: Sequence[BrowserActionName] = (
-    "goto",
-    "click",
-    "fill",
-    "wait_for_selector",
-    "screenshot",
-)
-
-
 @dataclass(slots=True)
 class BrowserAction:
     """Description of a single browser automation step."""
@@ -39,46 +30,6 @@ class BrowserAction:
     url: Optional[str] = None
     path: Optional[str] = None
     options: Optional[dict[str, Any]] = None
-
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "BrowserAction":
-        """Build an action from a JSON-style mapping.
-
-        The method provides a lightweight bridge between static configuration files and
-        the strongly-typed ``BrowserAction`` dataclass used by the automation runtime.
-        Only keys that map to existing dataclass fields are consumed; additional keys
-        are ignored to keep the loader tolerant of metadata that callers may persist in
-        their config files.
-        """
-
-        try:
-            name = data["name"]
-        except KeyError as exc:  # pragma: no cover - validated in tests
-            raise ValueError("Action definition requires a 'name'") from exc
-
-        if name not in SUPPORTED_ACTIONS:  # type: ignore[arg-type]
-            raise ValueError(f"Unsupported action name: {name!r}")
-
-        def optional_str(key: str) -> Optional[str]:
-            value = data.get(key)
-            if value is None:
-                return None
-            if not isinstance(value, str):
-                raise ValueError(f"'{key}' must be a string when provided")
-            return value
-
-        options = data.get("options")
-        if options is not None and not isinstance(options, Mapping):
-            raise ValueError("'options' must be a mapping when provided")
-
-        return cls(
-            name=name,
-            selector=optional_str("selector"),
-            text=optional_str("text"),
-            url=optional_str("url"),
-            path=optional_str("path"),
-            options=dict(options) if options is not None else None,
-        )
 
 
 @dataclass(slots=True)
@@ -133,8 +84,6 @@ class BrowserAutomation:
                     "or provide a custom playwright_factory."
                 )
             self._playwright_factory = sync_playwright
-
-    _SUPPORTED_ACTIONS: Sequence[BrowserActionName] = SUPPORTED_ACTIONS
 
     # ------------------------------------------------------------------
     def run(
